@@ -195,6 +195,7 @@ A path to a C<UNIX> socket used to communicate between the publishers. By defaul
 =head2 publish
 
   $c->publish("message");
+  $c->publish(@args);
 
 Publishes a message that the subscribing callbacks will receive.
 
@@ -209,6 +210,15 @@ Add the C<$cb> code reference to the callbacks that get published messages.
   $c->unsubscribe($cb);
 
 Remove the C<$cb> code reference from the callbacks that get published messages.
+
+=head1 SUBSCRIBERS
+
+  my $subscriber = sub {
+    my @args = @_;
+    ...
+  };
+
+Subscribers sent to the C<cb> option, or the C<subscribe> helper should simply be C<CODE> references that handle the arguments passed in. The C<@args> will be the same as what was passed in to the C<publish> helper, except they will have gotten C<JSON> encoded via L<Mojo::JSON> on the way, so only data structures that consist of regular scalars, arrays, hashes, and objects that implement C<TO_JSON> or that stringify will work correctly. See L<Mojo::JSON> for more details.
 
 =head1 METHODS
 
