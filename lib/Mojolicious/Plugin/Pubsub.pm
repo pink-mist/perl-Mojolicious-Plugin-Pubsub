@@ -15,7 +15,8 @@ my $conf;
 sub register {
   my ($self, $app, $cfg) = @_;
 
-  die "No callback specified { cb => sub { ... } }" unless exists $cfg->{cb};
+  $cfg->{cbs} = [];
+  push @{ $cfg->{subs} }, $cfg->{cb} if exists $cfg->{cb};
   $cfg->{socket} = $app->moniker . '.pubsub' unless exists $cfg->{socket};
   $conf = $cfg;
 
@@ -76,6 +77,28 @@ sub register {
     }
   );
 
+  $app->helper(
+    subscribe => sub {
+      my $self = shift;
+      my $cb = shift;
+
+      push @{ $conf->{subs} }, $cb;
+
+      return $self;
+    }
+  );
+
+  $app->helper(
+    unsubscribe => sub {
+      my $self = shift;
+      my $cb = shift;
+
+      @{ $conf->{subs} } = grep { $_ != $cb } @{ $conf->{subs} };
+
+      return $self;
+    }
+  );
+
 }
 
 sub _send {
@@ -116,7 +139,9 @@ sub _connect {
           if ($msg =~ s/^(.+)\n//) {
             my $b64 = $1;
             my $args = decode_json(b64_decode($b64));
-            $conf->{cb}->(@{ $args });
+            foreach my $subscriber (@{ $conf->{subs} }) {
+              $subscriber->(@{ $args });
+            }
           }
           else {
             return
@@ -159,7 +184,7 @@ Easy way to add pubsub to your Mojolicious apps; it hooks into the L<Mojo::IOLoo
 
 =head2 cb
 
-Takes a callback C<CODE> reference. Specifying a callback in C<cb> is required, as that's the only recourse you have of getting a published message.
+Takes a callback C<CODE> reference.
 
 =head2 socket
 
@@ -171,7 +196,19 @@ A path to a C<UNIX> socket used to communicate between the publishers. By defaul
 
   $c->publish("message");
 
-Publishes a message that the callback will receive.
+Publishes a message that the subscribing callbacks will receive.
+
+=head2 subscribe
+
+  $c->subscribe($cb);
+
+Add the C<$cb> code reference to the callbacks that get published messages.
+
+=head2 unsubscribe
+
+  $c->unsubscribe($cb);
+
+Remove the C<$cb> code reference from the callbacks that get published messages.
 
 =head1 METHODS
 
