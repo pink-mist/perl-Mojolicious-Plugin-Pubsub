@@ -71,6 +71,8 @@ sub register {
       my $msg = b64_encode(encode_json([@_]), "");
 
       _send($msg . "\n");
+
+      return $self;
     }
   );
 
