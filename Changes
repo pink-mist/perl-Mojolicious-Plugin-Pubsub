@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.002     2018-02-02 03:15:30+01:00 Europe/Stockholm
  - Add subscribe() and unsubscribe() helpers.
  - Add clearer documentation about callbacks/subscribers.
  - Fix a race condition in setting up the socket.
