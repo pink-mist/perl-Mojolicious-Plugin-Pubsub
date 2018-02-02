@@ -20,51 +20,71 @@ sub register {
   $cfg->{socket} = $app->moniker . '.pubsub' unless exists $cfg->{socket};
   $conf = $cfg;
 
-  my $sub = Mojo::IOLoop->subprocess(
-    sub {
-      my $loop = Mojo::IOLoop->singleton;
-      $loop->reset;
+  my $loop = Mojo::IOLoop->singleton;
 
-      my @streams;
+  pipe my $in, my $out or die "Could not open pipe pair: $!";
 
-      my $server = $loop->server(
-        {path => $conf->{socket}} => sub {
-          my ($loop, $stream, $id) = @_;
-          push @streams, $stream;
+  my $pid = fork();
+  die "Could not fork: $!" if not defined $pid;
 
-          my $msg;
-          $stream->on(
-            read => sub {
-              my ($stream, $bytes) = @_;
-              $msg .= $bytes;
+  if ($pid) {
+    close $out;
+    chomp(my $result = readline $in);
+    close $in;
 
-              while (length $msg) {
-                if ($msg =~ s/^(.+\n)//) {
-                  my $line = $1;
-                  foreach my $str (@streams) { $str->write($line); }
-                } else {
-                  return;
-                }
+    die "Could not establish pubsub socket: $result" if $result ne 'DONE';
+  } else {
+    # now in fork
+    close $in;
+    $loop->reset;
+
+    my @streams;
+
+    my $server = eval { $loop->server(
+      {path => $conf->{socket}} => sub {
+        my (undef, $stream) = @_;
+        push @streams, $stream;
+
+        my $msg;
+        $stream->on(
+          read => sub {
+            my ($stream, $bytes) = @_;
+            $msg .= $bytes;
+
+            while (length $msg) {
+              if ($msg =~ s/^(.+\n)//) {
+                my $line = $1;
+                foreach my $str (@streams) { $str->write($line); }
+              } else {
+                return;
               }
-
             }
-          );
+          }
+        );
 
-          $stream->on(
-            close => sub {
-              @streams = grep $_ ne $_[0], @streams;
-              $loop->stop unless @streams;
-            }
-          );
-        }
-      );
+        $stream->on(
+          close => sub {
+            @streams = grep $_ ne $_[0], @streams;
+            $loop->stop unless @streams;
+          }
+        );
+      }
+    ); };
 
-      $loop->start unless $loop->is_running;
-      unlink $conf->{socket};
+    if (not defined $server) {
+      print $out $@;
+      close $out;
+      exit;
     }
-  );
 
-  Mojo::IOLoop->singleton->next_tick(sub { _connect() });
+    print $out "DONE\n";
+    close $out;
+
+    $loop->start unless $loop->is_running;
+    exit;
+  }
+
+  $loop->next_tick(sub { _connect() });
 
   $app->helper(
     publish => sub {
