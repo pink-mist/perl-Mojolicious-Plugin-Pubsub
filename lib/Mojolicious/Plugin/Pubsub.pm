@@ -68,6 +68,8 @@ sub register {
             $loop->stop unless @streams;
           }
         );
+
+        $stream->timeout(0);
       }
     ); };
 
@@ -169,6 +171,8 @@ sub _connect {
 
         }
       });
+
+      $stream->timeout(0);
 
       $cb->($stream) if defined $cb;
 
