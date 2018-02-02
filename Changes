@@ -1,4 +1,8 @@
 {{$NEXT}}
+ - Add subscribe() and unsubscribe() helpers.
+ - Add clearer documentation about callbacks/subscribers.
+ - Fix a race condition in setting up the socket.
+ - Set stream timeout to 0 so it doesn't time out.
 
 0.001     2018-01-31 06:18:58+01:00 Europe/Stockholm
  - Initial release.
