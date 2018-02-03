@@ -16,6 +16,6 @@ app->start('daemon', '-l', "http://127.0.0.1:$port");
 
 
 
-is ($msg, 1, "Pubsub works fine.");
+is ($msg, 1, "Socket option works fine.");
 
 done_testing;
