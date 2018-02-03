@@ -17,3 +17,5 @@ app->start('daemon', '-l', "http://127.0.0.1:$port");
 is ($msg, 'message', "Pubsub works fine.");
 
 done_testing;
+
+unlink app->home->child(app->moniker . '.pubsub');
