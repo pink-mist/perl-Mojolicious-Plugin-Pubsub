@@ -17,7 +17,7 @@ sub register {
 
   $cfg->{cbs} = [];
   push @{ $cfg->{subs} }, $cfg->{cb} if exists $cfg->{cb};
-  $cfg->{socket} = $app->moniker . '.pubsub' unless exists $cfg->{socket};
+  $cfg->{socket} = $app->home->child($app->moniker . '.pubsub') unless exists $cfg->{socket};
   $conf = $cfg;
 
   my $loop = Mojo::IOLoop->singleton;
@@ -212,7 +212,7 @@ Takes a callback C<CODE> reference.
 
 =head2 socket
 
-A path to a C<UNIX> socket used to communicate between the publishers. By default this will be C<< $app->moniker . '.pubsub' >>.
+A path to a C<UNIX> socket used to communicate between the publishers. By default this will be C<< $app->home->child($app->moniker . '.pubsub') >>.
 
 =head1 HELPERS
 
