@@ -1,4 +1,10 @@
 {{$NEXT}}
+ - Make tests use a tempdir for their home. Should hopefully allow tests to
+   pass on *BSD.
+ - Before replacing a socket, check if there's already a viable daemon.
+ - Refactor chat example so it uses websockets (Thanks Grinnz!).
+ - Add documentation about how a new daemon is spun up.
+ - Add documentation about not supporting MSWin32.
 
 0.003     2018-02-03 15:21:16+01:00 Europe/Stockholm
  - Specify that we don't support MSWin32.
