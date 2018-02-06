@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.004     2018-02-06 01:57:52+01:00 Europe/Stockholm
  - Make tests use a tempdir for their home. Should hopefully allow tests to
    pass on *BSD.
  - Before replacing a socket, check if there's already a viable daemon.
