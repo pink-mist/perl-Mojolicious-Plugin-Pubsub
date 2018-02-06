@@ -8,6 +8,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::IOLoop;
 use Mojo::JSON qw( decode_json encode_json );
 use Mojo::Util qw( b64_decode b64_encode );
+use IO::Socket::UNIX;
 
 my $client;
 my $conf;
@@ -40,43 +41,45 @@ sub register {
 
     my @streams;
 
-    my $server = eval { $loop->server(
-      {path => $conf->{socket}} => sub {
-        my (undef, $stream) = @_;
-        push @streams, $stream;
+    unless (-e $conf->{socket} and IO::Socket::UNIX->new(Peer => $conf->{socket})) {
+      my $server = eval { $loop->server(
+        {path => $conf->{socket}} => sub {
+          my (undef, $stream) = @_;
+          push @streams, $stream;
 
-        my $msg;
-        $stream->on(
-          read => sub {
-            my ($stream, $bytes) = @_;
-            $msg .= $bytes;
+          my $msg;
+          $stream->on(
+            read => sub {
+              my ($stream, $bytes) = @_;
+              $msg .= $bytes;
 
-            while (length $msg) {
-              if ($msg =~ s/^(.+\n)//) {
-                my $line = $1;
-                foreach my $str (@streams) { $str->write($line); }
-              } else {
-                return;
+              while (length $msg) {
+                if ($msg =~ s/^(.+\n)//) {
+                  my $line = $1;
+                  foreach my $str (@streams) { $str->write($line); }
+                } else {
+                  return;
+                }
               }
             }
-          }
-        );
+          );
 
-        $stream->on(
-          close => sub {
-            @streams = grep $_ ne $_[0], @streams;
-            $loop->stop unless @streams;
-          }
-        );
+          $stream->on(
+            close => sub {
+              @streams = grep $_ ne $_[0], @streams;
+              $loop->stop unless @streams;
+            }
+          );
 
-        $stream->timeout(0);
+          $stream->timeout(0);
+        }
+      ); };
+
+      if (not defined $server) {
+        print $out $@;
+        close $out;
+        exit;
       }
-    ); };
-
-    if (not defined $server) {
-      print $out $@;
-      close $out;
-      exit;
     }
 
     print $out "DONE\n";
