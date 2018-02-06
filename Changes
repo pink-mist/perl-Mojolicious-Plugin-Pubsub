@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.005     2018-02-06 22:25:26+01:00 Europe/Stockholm
  - Deprecate ->publish, ->subscribe, and ->unsubscribe helpers in favour of
    ->pubsub->publish, ->pubsub->subscribe, and ->pubsub->unsubscribe helpers
    respectively. The deprecated helpers will be removed by version 0.010 or
