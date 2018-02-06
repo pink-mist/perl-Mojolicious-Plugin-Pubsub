@@ -1,4 +1,5 @@
 {{$NEXT}}
+ - Update docs to reflect new helper names. Oops.
 
 0.005     2018-02-06 22:25:26+01:00 Europe/Stockholm
  - Deprecate ->publish, ->subscribe, and ->unsubscribe helpers in favour of
