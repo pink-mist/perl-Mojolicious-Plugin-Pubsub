@@ -205,7 +205,9 @@ Mojolicious::Plugin::Pubsub - Pubsub plugin for Mojolicious
 
 =head1 DESCRIPTION
 
-Easy way to add pubsub to your Mojolicious apps; it hooks into the L<Mojo::IOLoop> to send and receive messages asynchronously.
+Easy way to add pubsub to your L<Mojolicious> apps; it hooks into the L<Mojo::IOLoop> to send and receive messages asynchronously.
+
+Each time you run your L<Mojolicious> app and the plugin gets loaded, it'll spawn a new daemon that'll try to connect to the socket if it already exists, and if it fails it will replace the socket assuming that the underlying daemon is dead. If it succeeds, it will cancel the new daemon and leave the old one to continue doing its work.
 
 =head1 OPTIONS
 
