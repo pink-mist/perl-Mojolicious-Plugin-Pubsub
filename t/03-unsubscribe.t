@@ -2,8 +2,10 @@ use Mojo::IOLoop;
 use Mojo::IOLoop::Server;
 use Mojolicious::Lite;
 use Test::More;
+use File::Temp 'tempdir';
 
 my $port = Mojo::IOLoop::Server->generate_port();
+app->home(Mojo::Home->new(tempdir( CLEANUP => 1 )));
 
 my $msg;
 my $msg2;
