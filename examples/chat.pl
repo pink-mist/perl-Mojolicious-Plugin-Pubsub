@@ -13,7 +13,7 @@ websocket '/channel' => sub {
   $c->inactivity_timeout(3600);
 
   # Forward messages from the browser to the socket
-  $c->on(message => sub { shift->publish(shift) });
+  $c->on(message => sub { shift->pubsub->publish(shift) });
 
   # Forward messages from the socket to the browser
   my $cb = $messages->on(mojochat => sub { $c->send(pop) });

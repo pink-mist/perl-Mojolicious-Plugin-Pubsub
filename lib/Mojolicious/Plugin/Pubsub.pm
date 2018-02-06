@@ -7,7 +7,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 
 use Mojo::IOLoop;
 use Mojo::JSON qw( decode_json encode_json );
-use Mojo::Util qw( b64_decode b64_encode );
+use Mojo::Util qw( b64_decode b64_encode deprecated );
 use IO::Socket::UNIX;
 
 my $client;
@@ -92,7 +92,7 @@ sub register {
   $loop->next_tick(sub { _connect() });
 
   $app->helper(
-    publish => sub {
+    'pubsub.publish' => sub {
       my $self = shift;
       my $msg = b64_encode(encode_json([@_]), "");
 
@@ -103,7 +103,7 @@ sub register {
   );
 
   $app->helper(
-    subscribe => sub {
+    'pubsub.subscribe' => sub {
       my $self = shift;
       my $cb = shift;
 
@@ -114,7 +114,7 @@ sub register {
   );
 
   $app->helper(
-    unsubscribe => sub {
+    'pubsub.unsubscribe' => sub {
       my $self = shift;
       my $cb = shift;
 
@@ -123,6 +123,22 @@ sub register {
       return $self;
     }
   );
+
+  $app->helper(
+    publish => sub {
+      deprecated '->publish is deprecated in favour of ->pubsub->publish';
+      shift->pubsub->publish(@_);
+    });
+  $app->helper(
+    subscribe => sub {
+      deprecated '->subscribe is deprecated in favour of ->pubsub->subscribe';
+      shift->pubsub->subscribe(@_);
+    });
+  $app->helper(
+    unsubscribe => sub {
+      deprecated '->unsubscribe is deprecated in favour of ->pubsub->unsubscribe';
+      shift->pubsub->unsubscribe(@_);
+    });
 
 }
 
